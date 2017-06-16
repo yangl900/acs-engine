@@ -478,6 +478,36 @@ func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
 	}
 }
 
+// https://stackoverflow.com/a/18411978
+func VersionOrdinal(version api.OrchestratorVersion) string {
+	// ISO/IEC 14651:2011
+	const maxByte = 1<<8 - 1
+	vo := make([]byte, 0, len(version)+8)
+	j := -1
+	for i := 0; i < len(version); i++ {
+		b := version[i]
+		if '0' > b || b > '9' {
+			vo = append(vo, b)
+			j = -1
+			continue
+		}
+		if j == -1 {
+			vo = append(vo, 0x00)
+			j = len(vo) - 1
+		}
+		if vo[j] == 1 && vo[j+1] == '0' {
+			vo[j+1] = b
+			continue
+		}
+		if vo[j]+1 > maxByte {
+			panic("VersionOrdinal: invalid version")
+		}
+		vo = append(vo, b)
+		vo[j]++
+	}
+	return string(vo)
+}
+
 // getTemplateFuncMap returns all functions used in template generation
 func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[string]interface{} {
 	return template.FuncMap{
@@ -500,6 +530,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"IsDCOS190": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
 				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOS190
+		},
+		"IsKubernetesVersionGe": func(version string) bool {
+			targetVersion := api.OrchestratorVersion(version)
+			targetVersionOrdinal := VersionOrdinal(targetVersion)
+			orchestratorVersionOrdinal := VersionOrdinal(cs.Properties.OrchestratorProfile.OrchestratorVersion)
+			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes &&
+				orchestratorVersionOrdinal >= targetVersionOrdinal
 		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
@@ -724,6 +761,44 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		},
 		"HasWindowsSecrets": func() bool {
 			return cs.Properties.WindowsProfile.HasSecrets()
+		},
+		"PopulateClassicModeDefaultValue": func(attr string) string {
+			var val string
+			if !t.ClassicMode {
+				val = ""
+			} else {
+				kubernetesVersion := cs.Properties.OrchestratorProfile.OrchestratorVersion
+				cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+				switch attr {
+				case "kubernetesHyperkubeSpec":
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["hyperkube"]
+				case "kubernetesAddonManagerSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["addonmanager"]
+				case "kubernetesAddonResizerSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["addonresizer"]
+				case "kubernetesDashboardSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dashboard"]
+				case "kubernetesDNSMasqSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dnsmasq"]
+				case "kubernetesExecHealthzSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["exechealthz"]
+				case "kubernetesHeapsterSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["heapster"]
+				case "kubernetesKubeDNSSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dns"]
+				case "kubernetesPodInfraContainerSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["pause"]
+				case "kubeBinariesSASURL":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeImages[kubernetesVersion]["windowszip"]
+				case "kubeClusterCidr":
+					val = "10.244.0.0/16"
+				case "kubeBinariesVersion":
+					val = string(api.KubernetesLatest)
+				default:
+					val = ""
+				}
+			}
+			return fmt.Sprintf("\"defaultValue\": \"%s\",", val)
 		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
