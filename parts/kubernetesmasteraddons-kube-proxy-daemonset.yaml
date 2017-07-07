@@ -22,9 +22,6 @@ spec:
         - "--cluster-cidr=<kubeClusterCidr>"
         image: "<kubernetesHyperkubeSpec>"
         name: kube-proxy
-        resources:
-          requests:
-            cpu: 100m
         securityContext:
           privileged: true
         volumeMounts:
