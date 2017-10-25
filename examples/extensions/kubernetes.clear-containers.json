@@ -1,0 +1,53 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "orchestratorRelease": "1.8",
+      "kubernetesConfig": {
+        "networkPolicy": "azure"
+      }
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "jessfraz-clear-containers-3",
+      "vmSize": "Standard_D4s_v3"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agent",
+        "count": 3,
+        "vmSize": "Standard_D4s_v3",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "ManagedDisks",
+        "diskSizesGB": [1023],
+        "preProvisionExtension": {
+          "name": "clear-containers",
+          "singleOrAll": "All"
+        }
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": ""
+          }
+        ]
+      }
+    },
+    "extensionProfiles": [
+      {
+        "name": "clear-containers",
+        "version": "v1",
+        "rootURL": "https://misc.j3ss.co/",
+        "script": "clear-containers.sh"
+      }
+    ],
+    "servicePrincipalProfile": {
+      "clientId": "",
+      "secret": ""
+    }
+  }
+}
