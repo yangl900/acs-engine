@@ -86,4 +86,8 @@ const (
 	DefaultTillerAddonEnabled = true
 	// DefaultDashboardAddonEnabled determines the acs-engine provided default for enabling kubernetes-dashboard addon
 	DefaultDashboardAddonEnabled = true
+	// DefaultTillerAddonName is the name of the tiller addon deployment
+	DefaultTillerAddonName = "tiller"
+	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
+	DefaultReschedulerAddonName = "rescheduler"
 )
