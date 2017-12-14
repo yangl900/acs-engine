@@ -54,6 +54,31 @@ const (
 
 // KubeImages represents Docker images used for Kubernetes components based on Kubernetes version
 var KubeImages = map[api.OrchestratorVersion]map[string]string{
+	api.Kubernetes1611: {
+		"hyperkube":       "hyperkube-amd64:v1.6.11",
+		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
+		"exechealthz":     "exechealthz-amd64:1.2",
+		"addonresizer":    "addon-resizer:1.7",
+		"heapster":        "heapster-amd64:v1.3.0",
+		"dns":             "k8s-dns-kube-dns-amd64:1.14.5",
+		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
+		"dnsmasq":         "k8s-dns-dnsmasq-nanny-amd64:1.14.5",
+		"pause":           "pause-amd64:3.0",
+		"tiller":          "tiller:v2.6.2",
+		"windowszip":      "v1.6.11-1intwinnat.zip",
+		"nodestatusfreq":   "1m",
+		"nodegraceperiod":   "5m",
+		"podeviction":   "1m",
+		"routeperiod":   "1m",
+		"backoff": "true",
+		"backoffduration": "5",
+		"backoffexponent": "1.5",
+		"backoffretries": "6",
+		"backoffjitter": "1",
+		"ratelimit": "true",
+		"ratelimitqps": "3",
+		"ratelimitbucket": "10",
+	},
 	api.Kubernetes166: {
 		"hyperkube":    "hyperkube-amd64:v1.6.6",
 		"dashboard":    "kubernetes-dashboard-amd64:v1.6.1",
