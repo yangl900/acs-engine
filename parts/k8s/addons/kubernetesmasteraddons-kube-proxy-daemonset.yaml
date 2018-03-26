@@ -28,9 +28,6 @@ spec:
         - "--feature-gates=ExperimentalCriticalPodAnnotation=true"
         image: "<kubernetesHyperkubeSpec>"
         name: kube-proxy
-        resources:
-          requests:
-            cpu: 100m
         securityContext:
           privileged: true
         volumeMounts:

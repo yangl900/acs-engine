@@ -56,11 +56,7 @@ echo `date`,`hostname`, startscript>>/opt/m
 # A delay to start the kubernetes processes is necessary
 # if a reboot is required.  Otherwise, the agents will encounter issue:
 # https://github.com/kubernetes/kubernetes/issues/41185
-if [ -f /var/run/reboot-required ]; then
-    REBOOTREQUIRED=true
-else
-    REBOOTREQUIRED=false
-fi
+REBOOTREQUIRED=false
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
@@ -138,15 +134,18 @@ touch "${APISERVER_PUBLIC_KEY_PATH}"
 chmod 0644 "${APISERVER_PUBLIC_KEY_PATH}"
 chown root:root "${APISERVER_PUBLIC_KEY_PATH}"
 
-AZURE_JSON_PATH="/etc/kubernetes/azure.json"
-touch "${AZURE_JSON_PATH}"
-chmod 0600 "${AZURE_JSON_PATH}"
-chown root:root "${AZURE_JSON_PATH}"
+if [[ ! -z "${MASTER_NODE}" ]]; then
+    echo "MASTER_NODE is non-empty, master node, configure azure json."
 
-set +x
-echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
-echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
-cat << EOF > "${AZURE_JSON_PATH}"
+    AZURE_JSON_PATH="/etc/kubernetes/azure.json"
+    touch "${AZURE_JSON_PATH}"
+    chmod 0600 "${AZURE_JSON_PATH}"
+    chown root:root "${AZURE_JSON_PATH}"
+
+    set +x
+    echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
+    echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
+    cat << EOF > "${AZURE_JSON_PATH}"
 {
     "cloud":"${TARGET_ENVIRONMENT}",
     "tenantId": "${TENANT_ID}",
@@ -173,6 +172,9 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "useInstanceMetadata": ${USE_INSTANCE_METADATA}
 }
 EOF
+else
+    echo "MASTER_NODE is empty, worker node, skip azure json."
+fi
 
 ###########################################################
 # END OF SECRET DATA
@@ -753,6 +755,12 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
 fi
 
 echo "Install complete successfully"
+
+if [ -f /var/run/reboot-required ]; then
+    REBOOTREQUIRED=true
+else
+    REBOOTREQUIRED=false
+fi
 
 if $REBOOTREQUIRED; then
   # wait 1 minute to restart node, so that the custom script extension can complete
