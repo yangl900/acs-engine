@@ -2,9 +2,12 @@
     "{{.Name}}StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('{{.Name}}Index'))]",
     "{{.Name}}StorageAccountsCount": "[add(div(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),1)))]",
 {{end}}
+    "{{.Name}}Number": "[replace('{{.Name}}', 'agentpool', '')]",
     "{{.Name}}Count": "[parameters('{{.Name}}Count')]",
     "{{.Name}}Offset": "[parameters('{{.Name}}Offset')]",
     "{{.Name}}AvailabilitySet": "[concat('{{.Name}}-availabilitySet-', variables('nameSuffix'))]",
+    "systemFirstNodeAddrOctet3": "252",
+    "agentPool1FirstNodeAddrOctet3": "249",
 {{if .IsWindows}}
     "winResourceNamePrefix" : "[substring(variables('nameSuffix'), 0, 5)]",
     "{{.Name}}VMNamePrefix": "[concat(variables('winResourceNamePrefix'), variables('orchestratorName'), add(900,variables('{{.Name}}Index')))]",
