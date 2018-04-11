@@ -28,14 +28,15 @@
               "primary": true,
               {{end}}
               {{if eq $.Name "system"}}
-              "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(add(50, int(variables('masterFirstAddrOctet4')))))]",
-              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[concat(variables('masterFirstNodeAddrPrefix'),'.', sub(int(variables('systemFirstNodeAddrOctet3')), copyIndex()), '.', add(sub({{$seq}}, 1), add(50, int(variables('masterFirstAddrOctet4')))))]",
               {{else if eq $.Name "agentpool1"}}
-              "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(add(100, int(variables('masterFirstAddrOctet4')))))]",
-              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[concat(variables('masterFirstNodeAddrPrefix'),'.', sub(int(variables('agentPool1FirstNodeAddrOctet3')), copyIndex()), '.', add(sub({{$seq}}, 1), add(100, int(variables('masterFirstAddrOctet4')))))]",
+              {{else if eq $seq 1}}
+              "privateIPAddress": "[concat(variables('masterFirstNodeAddrPrefix'),'.', copyIndex(mul(25, sub(int(variables('{{$.Name}}Number')), 2))), '.', add(sub({{$seq}}, 1), add(150, int(variables('masterFirstAddrOctet4')))))]",
               {{else}}
-              "privateIPAllocationMethod": "Dynamic",
+              "privateIPAddress": "[concat(variables('masterFirstAddrOctets')[0],'.244.', copyIndex(mul(25, sub(int(variables('{{$.Name}}Number')), 2))), '.', add(sub({{$seq}}, 1), add(150, int(variables('masterFirstAddrOctet4')))))]",
               {{end}}
+              "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('{{$.Name}}VnetSubnetID')]"
               }
@@ -60,7 +61,7 @@
         {
             "platformFaultDomainCount": "2",
             "platformUpdateDomainCount": "3",
-		"managed" : "true"
+            "managed" : "true"
         },
   
       "type": "Microsoft.Compute/availabilitySets"
