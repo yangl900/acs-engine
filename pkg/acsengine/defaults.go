@@ -499,7 +499,7 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 				a.MasterProfile.Subnet = a.OrchestratorProfile.KubernetesConfig.ClusterSubnet
 				// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
 				if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
-					a.MasterProfile.FirstConsecutiveStaticIP = getFirstConsecutiveStaticIPAddress(a.MasterProfile.Subnet)
+					a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
 				}
 			} else {
 				a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet

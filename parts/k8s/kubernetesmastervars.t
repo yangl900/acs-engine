@@ -282,8 +282,11 @@
     "masterFirstAddrOctets": "[split(parameters('firstConsecutiveStaticIP'),'.')]",
     "masterFirstAddrOctet4": "[variables('masterFirstAddrOctets')[3]]",
     "masterFirstAddrPrefix": "[concat(variables('masterFirstAddrOctets')[0],'.',variables('masterFirstAddrOctets')[1],'.',variables('masterFirstAddrOctets')[2],'.')]",
-    "masterFirstNodeAddrPrefix": "[concat(variables('masterFirstAddrOctets')[0],'.',variables('masterFirstAddrOctets')[1])]",
-    "masterFirstNodeAddrOctet3": "[variables('masterFirstAddrOctets')[2]]",
+    "aciCustomerNodeAddrPrefix": "10.240.",
+    "aciCustomerPodAddrPrefix": "10.244.",
+    "aciSystemNodeAddrPrefix": "10.240.255.",
+    "aciSystemPodAddrPrefix": "10.250.",
+    "aciPrimaryIPOctet4": "5",
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]",
     "masterVMNames": [
       "[concat(variables('masterVMNamePrefix'), '0')]",
