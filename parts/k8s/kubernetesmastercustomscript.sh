@@ -257,7 +257,7 @@ function configAzureNetworkPolicy() {
 
     # Enable CNI.
     setNetworkPlugin cni
-    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro --volume=/usr/bin:/usr/bin:ro --volume=/etc/default:/etc/default:rw"
 }
 
 # Configures Kubelet to use CNI and mount the appropriate hostpaths
