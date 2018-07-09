@@ -11,17 +11,17 @@ func setKubeletConfig(cs *api.ContainerService) {
 	o := cs.Properties.OrchestratorProfile
 	cloudSpecConfig := GetCloudSpecConfig(cs.Location)
 	staticLinuxKubeletConfig := map[string]string{
-		"--address":                         "0.0.0.0",
-		"--allow-privileged":                "true",
-		"--anonymous-auth":                  "false",
-		"--authorization-mode":              "Webhook",
-		"--client-ca-file":                  "/etc/kubernetes/certs/ca.crt",
-		"--pod-manifest-path":               "/etc/kubernetes/manifests",
-		"--cluster-dns":                     o.KubernetesConfig.DNSServiceIP,
-		"--cgroups-per-qos":                 "true",
-		"--enforce-node-allocatable":        "pods",
-		"--kubeconfig":                      "/var/lib/kubelet/kubeconfig",
-		"--keep-terminated-pod-volumes":     "false",
+		"--address":                     "0.0.0.0",
+		"--allow-privileged":            "true",
+		"--anonymous-auth":              "false",
+		"--authorization-mode":          "Webhook",
+		"--client-ca-file":              "/etc/kubernetes/certs/ca.crt",
+		"--pod-manifest-path":           "/etc/kubernetes/manifests",
+		"--cluster-dns":                 o.KubernetesConfig.DNSServiceIP,
+		"--cgroups-per-qos":             "true",
+		"--enforce-node-allocatable":    "pods",
+		"--kubeconfig":                  "/var/lib/kubelet/kubeconfig",
+		"--keep-terminated-pod-volumes": "false",
 	}
 
 	staticWindowsKubeletConfig := make(map[string]string)
@@ -85,6 +85,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		for _, key := range []string{"--anonymous-auth", "--client-ca-file"} {
 			delete(o.KubernetesConfig.KubeletConfig, key)
 		}
+		o.KubernetesConfig.KubeletConfig["--authorization-mode"] = "AlwaysAllow"
 	}
 
 	// Master-specific kubelet config changes go here

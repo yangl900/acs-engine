@@ -6,6 +6,9 @@ OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
 RHEL_OS_NAME="RHEL"
 COREOS_OS_NAME="COREOS"
+CNI_BIN_DIR=/opt/cni/bin
+ERR_CNI_DOWNLOAD_TIMEOUT=41
+VNET_CNI_MODE=$1
 
 # Set default filepaths
 KUBECTL=/usr/local/bin/kubectl
@@ -214,6 +217,27 @@ function downloadUrl () {
     echo Executed curl for \"${1}\" $i times
 }
 
+function runAptDaily() {
+    echo `date`,`hostname`, PRE-APT-SYSTEMD-DAILY>>/opt/m
+    /usr/lib/apt/apt.systemd.daily
+    echo `date`,`hostname`, POST-APT-SYSTEMD-DAILY>>/opt/m
+}
+
+retrycmd_get_tarball() {
+    tar_retries=$1; wait_sleep=$2; tarball=$3; url=$4
+    echo "${tar_retries} retries"
+    for i in $(seq 1 $tar_retries); do
+        tar -tzf $tarball
+        [ $? -eq 0  ] && break || \
+        if [ $i -eq $tar_retries ]; then
+            return 1
+        else
+            timeout 60 curl -fsSL $url -o $tarball
+            sleep $wait_sleep
+        fi
+    done
+}
+
 function setMaxPods () {
     sed -i "s/^KUBELET_MAX_PODS=.*/KUBELET_MAX_PODS=${1}/" /etc/default/kubelet
 }
@@ -230,34 +254,49 @@ function setDockerOpts () {
     sed -i "s#^DOCKER_OPTS=.*#DOCKER_OPTS=${1}#" /etc/default/kubelet
 }
 
-function configAzureNetworkPolicy() {
-    CNI_CONFIG_DIR=/etc/cni/net.d
-    mkdir -p $CNI_CONFIG_DIR
-
-    chown -R root:root $CNI_CONFIG_DIR
-    chmod 755 $CNI_CONFIG_DIR
-
-    # Download Azure VNET CNI plugins.
-    CNI_BIN_DIR=/opt/cni/bin
+function installCNI() {
     mkdir -p $CNI_BIN_DIR
-
-    # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
-    downloadUrl ${VNET_CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR
-    # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
-    downloadUrl ${CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR ./loopback ./portmap
+    CONTAINERNETWORKING_CNI_TGZ_TMP=/tmp/containernetworking_cni.tgz
+    retrycmd_get_tarball 60 5 $CONTAINERNETWORKING_CNI_TGZ_TMP ${CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
+    tar -xzf $CONTAINERNETWORKING_CNI_TGZ_TMP -C $CNI_BIN_DIR
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
+}
 
-    # Copy config file
+function configAzureCNI() {
+    CNI_CONFIG_DIR=/etc/cni/net.d
+    mkdir -p $CNI_CONFIG_DIR
+    chown -R root:root $CNI_CONFIG_DIR
+    chmod 755 $CNI_CONFIG_DIR
+    mkdir -p $CNI_BIN_DIR
+    AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
+    if [[ "$VNET_CNI_MODE" = "multitenancy" ]]; then
+        echo "use multitenancy plugin"
+        retrycmd_get_tarball 60 5 $AZURE_CNI_TGZ_TMP ${VNET_CNI_MULTITENANCY_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
+    else
+        echo "use non-multitenancy plugin"
+        retrycmd_get_tarball 60 5 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
+    fi
+    tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
+    installCNI
     mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
     chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
-
-    # Dump ebtables rules.
     /sbin/ebtables -t nat --list
+}
+
+function configAzureNetworkPolicy() {
+    configAzureCNI
 
     # Enable CNI.
     setNetworkPlugin cni
-    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+
+    if [[ "$VNET_CNI_MODE" = "multitenancy" ]]; then
+        echo "set additional volume options"
+        setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro --volume=/usr/bin:/usr/bin:ro --volume=/etc/default:/etc/default:rw"
+    else
+        echo "use standard volume options"
+        setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+    fi
 }
 
 # Configures Kubelet to use CNI and mount the appropriate hostpaths
@@ -769,6 +808,8 @@ if $REBOOTREQUIRED; then
   # wait 1 minute to restart node, so that the custom script extension can complete
   echo 'reboot required, rebooting node in 1 minute'
   /bin/bash -c "shutdown -r 1 &"
+else
+  runAptDaily &
 fi
 
 echo `date`,`hostname`, endscript>>/opt/m

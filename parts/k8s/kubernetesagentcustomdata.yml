@@ -205,9 +205,6 @@ runcmd:
 {{if IsNSeriesSKU .}}
   {{GetGPUDriversInstallScript .}}
 {{end}}
-- echo `date`,`hostname`, PRE-APT-SYSTEMD-DAILY>>/opt/m
-- /usr/lib/apt/apt.systemd.daily
-- echo `date`,`hostname`, POST-APT-SYSTEMD-DAILY>>/opt/m
 - apt-mark unhold walinuxagent
 - mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete
 - echo `date`,`hostname`, endruncmd>>/opt/m

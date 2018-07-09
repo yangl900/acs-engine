@@ -307,7 +307,13 @@
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
+          {{if eq $.Name "system"}}
           "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          {{else if eq $.Name "agentpool1"}}
+          "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          {{else}}
+          "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh multitenancy >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          {{end}}
         }
       }
     }
