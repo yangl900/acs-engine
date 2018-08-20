@@ -31,14 +31,14 @@
                 {{else if eq $.Name "agentpool1"}}
                 "privateIPAddress": "[concat(variables('aciSystemNodeAddrPrefix'), copyIndex(add(100, int(variables('aciPrimaryIPOctet4')))))]",
                 {{else}}
-                "privateIPAddress": "[concat(variables('aciCustomerNodeAddrPrefix'), copyIndex(mul(25, sub(int(variables('{{$.Name}}Variables').{{$.Name}}Index), 2))), '.', variables('aciPrimaryIPOctet4'))]",
+                "privateIPAddress": "[concat(variables('aciCustomerNodeAddrPrefix'), copyIndex(mul(25, sub(int(variables('{{$.Name}}Index')), 2))), '.', variables('aciPrimaryIPOctet4'))]",
                 {{end}}
               {{else if eq $.Name "system"}}
               "privateIPAddress": "[concat(variables('aciSystemPodAddrPrefix'), copyIndex(add(50, int(variables('aciPrimaryIPOctet4')))), '.', add(sub({{$seq}}, 1), int(variables('aciPrimaryIPOctet4'))))]",
               {{else if eq $.Name "agentpool1"}}
               "privateIPAddress": "[concat(variables('aciSystemPodAddrPrefix'), copyIndex(add(100, int(variables('aciPrimaryIPOctet4')))), '.', add(sub({{$seq}}, 1), int(variables('aciPrimaryIPOctet4'))))]",
               {{else}}
-              "privateIPAddress": "[concat(variables('aciCustomerPodAddrPrefix'), copyIndex(mul(25, sub(int(variables('{{$.Name}}Variables').{{$.Name}}Index), 2))), '.', add(sub({{$seq}}, 1), int(variables('aciPrimaryIPOctet4'))))]",
+              "privateIPAddress": "[concat(variables('aciCustomerPodAddrPrefix'), copyIndex(mul(25, sub(int(variables('{{$.Name}}Index')), 2))), '.', add(sub({{$seq}}, 1), int(variables('aciPrimaryIPOctet4'))))]",
               {{end}}
               "privateIPAllocationMethod": "Static",
               "subnet": {

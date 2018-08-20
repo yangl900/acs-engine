@@ -275,6 +275,7 @@ function configAzureCNI() {
     mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
     chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
     /sbin/ebtables -t nat --list
+    echo ${VNET_CNI_PLUGINS_URL} > /etc/kubernetes/vnet_cni_plugins_version.txt
 }
 
 function configAzureNetworkPolicy() {
@@ -283,7 +284,7 @@ function configAzureNetworkPolicy() {
     # Enable CNI.
     setNetworkPlugin cni
 
-    if grep -qi '"multitenancy"\s*:\s*true' "$CNI_BIN_DIR/10-azure.conflist"; then
+    if grep -qi '"multitenancy"\s*:\s*true' "$CNI_CONFIG_DIR/10-azure.conflist"; then
         echo "set additional volume options"
         setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro --volume=/usr/bin:/usr/bin:ro --volume=/etc/default:/etc/default:rw"
     else
