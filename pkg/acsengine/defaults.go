@@ -35,7 +35,7 @@ var (
 		WindowsPackageSASURLBase:                   "https://acs-mirror.azureedge.net/wink8s/",
 		WindowsTelemetryGUID:                       "fb801154-36b9-41bc-89c2-f4d4f05472b0",
 		CNIPluginsDownloadURL:                      "https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-" + CNIPluginVer + ".tgz",
-		VnetCNILinuxPluginsDownloadURL:             "https://github.com/Azure/azure-container-networking/releases/download/" + AzureCniPluginVer + "/azure-vnet-cni-linux-amd64-" + AzureCniPluginVer + ".tgz",
+		VnetCNILinuxPluginsDownloadURL:             "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-" + AzureCniPluginVer + ".tgz",
 		VnetCNIMultitenancyLinuxPluginsDownloadURL: "https://github.com/Azure/azure-container-networking/releases/download/" + AzureCniPluginVer + "/azure-vnet-cni-multitenancy-linux-amd64-" + AzureCniPluginVer + ".tgz",
 		VnetCNIWindowsPluginsDownloadURL:           "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-" + AzureCniPluginVer + ".zip",
 	}

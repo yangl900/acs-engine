@@ -6,29 +6,28 @@
 "{{.Name}}Variables":
 {
     {{if .IsStorageAccount}}
-        "{{.Name}}StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('{{.Name}}Index'))]",
-        "{{.Name}}StorageAccountsCount": "[add(div(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),1)))]",
+        "StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('{{.Name}}Index'))]",
+        "StorageAccountsCount": "[add(div(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),1)))]",
     {{end}}
-        "{{.Name}}Number": "[replace('{{.Name}}', 'agentpool', '')]",
-        "{{.Name}}Offset": "[parameters('{{.Name}}Offset')]",
-        "{{.Name}}AvailabilitySet": "[concat('{{.Name}}-availabilitySet-', variables('nameSuffix'))]",
+        "Offset": "[parameters('{{.Name}}Offset')]",
+        "AvailabilitySet": "[concat('{{.Name}}-availabilitySet-', variables('nameSuffix'))]",
     {{if .IsWindows}}
-        "{{.Name}}VMNamePrefix": "[concat(variables('winResourceNamePrefix'), variables('orchestratorName'), add(900,variables('{{.Name}}Index')))]",
+        "VMNamePrefix": "[concat(variables('winResourceNamePrefix'), variables('orchestratorName'), add(900,variables('{{.Name}}Index')))]",
     {{else}}
-        "{{.Name}}VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'), '-')]", 
+        "VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'), '-')]", 
     {{end}}
-        "{{.Name}}VMSize": "[parameters('{{.Name}}VMSize')]",
+        "VMSize": "[parameters('{{.Name}}VMSize')]",
     {{if .IsCustomVNET}}
-        "{{.Name}}VnetSubnetID": "[parameters('{{.Name}}VnetSubnetID')]",
-        "{{.Name}}SubnetName": "[parameters('{{.Name}}VnetSubnetID')]",
-        "{{.Name}}VnetParts": "[split(parameters('{{.Name}}VnetSubnetID'),'/subnets/')]",
+        "VnetSubnetID": "[parameters('{{.Name}}VnetSubnetID')]",
+        "SubnetName": "[parameters('{{.Name}}VnetSubnetID')]",
+        "VnetParts": "[split(parameters('{{.Name}}VnetSubnetID'),'/subnets/')]",
     {{else}}
-        "{{.Name}}VnetSubnetID": "[variables('vnetSubnetID')]",
-        "{{.Name}}SubnetName": "[variables('subnetName')]",
+        "VnetSubnetID": "[variables('vnetSubnetID')]",
+        "SubnetName": "[variables('subnetName')]",
     {{end}}
-        "{{.Name}}osImageOffer": "[parameters('{{.Name}}osImageOffer')]",
-        "{{.Name}}osImageSKU": "[parameters('{{.Name}}osImageSKU')]",
-        "{{.Name}}osImagePublisher": "[parameters('{{.Name}}osImagePublisher')]",
-        "{{.Name}}osImageVersion": "[parameters('{{.Name}}osImageVersion')]"
+        "osImageOffer": "[parameters('{{.Name}}osImageOffer')]",
+        "osImageSKU": "[parameters('{{.Name}}osImageSKU')]",
+        "osImagePublisher": "[parameters('{{.Name}}osImagePublisher')]",
+        "osImageVersion": "[parameters('{{.Name}}osImageVersion')]"
 },
 

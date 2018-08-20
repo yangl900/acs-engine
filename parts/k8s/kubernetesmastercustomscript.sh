@@ -8,7 +8,6 @@ RHEL_OS_NAME="RHEL"
 COREOS_OS_NAME="COREOS"
 CNI_BIN_DIR=/opt/cni/bin
 ERR_CNI_DOWNLOAD_TIMEOUT=41
-VNET_CNI_MODE=$1
 
 # Set default filepaths
 KUBECTL=/usr/local/bin/kubectl
@@ -223,7 +222,7 @@ function runAptDaily() {
     echo `date`,`hostname`, POST-APT-SYSTEMD-DAILY>>/opt/m
 }
 
-retrycmd_get_tarball() {
+function retrycmd_get_tarball() {
     tar_retries=$1; wait_sleep=$2; tarball=$3; url=$4
     echo "${tar_retries} retries"
     for i in $(seq 1 $tar_retries); do
@@ -270,13 +269,7 @@ function configAzureCNI() {
     chmod 755 $CNI_CONFIG_DIR
     mkdir -p $CNI_BIN_DIR
     AZURE_CNI_TGZ_TMP=/tmp/azure_cni.tgz
-    if [[ "$VNET_CNI_MODE" = "multitenancy" ]]; then
-        echo "use multitenancy plugin"
-        retrycmd_get_tarball 60 5 $AZURE_CNI_TGZ_TMP ${VNET_CNI_MULTITENANCY_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
-    else
-        echo "use non-multitenancy plugin"
-        retrycmd_get_tarball 60 5 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
-    fi
+    retrycmd_get_tarball 60 5 $AZURE_CNI_TGZ_TMP ${VNET_CNI_PLUGINS_URL} || exit $ERR_CNI_DOWNLOAD_TIMEOUT
     tar -xzf $AZURE_CNI_TGZ_TMP -C $CNI_BIN_DIR
     installCNI
     mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
@@ -290,7 +283,7 @@ function configAzureNetworkPolicy() {
     # Enable CNI.
     setNetworkPlugin cni
 
-    if [[ "$VNET_CNI_MODE" = "multitenancy" ]]; then
+    if grep -qi '"multitenancy"\s*:\s*true' "$CNI_BIN_DIR/10-azure.conflist"; then
         echo "set additional volume options"
         setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro --volume=/usr/bin:/usr/bin:ro --volume=/etc/default:/etc/default:rw"
     else
