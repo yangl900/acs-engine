@@ -38,6 +38,7 @@ spec:
         - "--storage-backend=<etcdApiVersion>"
         - "--authorization-mode=ABAC,RBAC"
         - "--authorization-policy-file=/etc/kubernetes/manifests/defaultpolicy.json"
+        - "--feature-gates=MountPropagation=true"
         - "--v=4"
         - "<kubernetesEnableRbac>"
         - "--requestheader-allowed-names="
