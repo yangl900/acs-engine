@@ -546,8 +546,6 @@ function ensureK8s() {
         return
     fi
     k8sHealthy=1
-    nodesActive=1
-    nodesReady=1
     for i in {1..600}; do
         if [ -e $KUBECTL ]
         then
@@ -568,36 +566,6 @@ function ensureK8s() {
     if [ $k8sHealthy -ne 0 ]
     then
         echo "k8s cluster is not healthy after $i seconds"
-        exit 3
-    fi
-    for i in {1..1800}; do
-        nodes=$(${KUBECTL} get nodes 2>/dev/null | grep 'Ready' | wc -l)
-            if [ $nodes -eq $TOTAL_NODES ]
-            then
-                echo "all nodes are participating, took $i seconds"
-                nodesActive=0
-                break
-            fi
-        sleep 1
-    done
-    if [ $nodesActive -ne 0 ]
-    then
-        echo "still waiting for active nodes after $i seconds"
-        exit 3
-    fi
-    for i in {1..600}; do
-        notReady=$(${KUBECTL} get nodes 2>/dev/null | grep 'NotReady' | wc -l)
-            if [ $notReady -eq 0 ]
-            then
-                echo "all nodes are Ready, took $i seconds"
-                nodesReady=0
-                break
-            fi
-        sleep 1
-    done
-    if [ $nodesReady -ne 0 ]
-    then
-        echo "still waiting for Ready nodes after $i seconds"
         exit 3
     fi
 }
